@@ -1,0 +1,246 @@
+:root {
+  --bg: #f1f5f9;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --brand: #0ea5e9;
+  --brand-dark: #0284c7;
+  --border: #e2e8f0;
+  --danger: #dc2626;
+  --ok: #16a34a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* ── Шапка ── */
+.topbar {
+  background: linear-gradient(90deg, #0284c7, #0ea5e9);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.topbar h1 { margin: 0; font-size: 20px; }
+.topbar-sub { opacity: .85; font-size: 14px; }
+
+/* ── Сетка страницы ── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  padding: 16px 20px;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+.panel h2 { margin: 0 0 12px; font-size: 16px; }
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+/* ── Навигация по неделям ── */
+.week-nav { display: flex; align-items: center; gap: 10px; }
+.week-nav button {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.week-nav button:hover { border-color: var(--brand); color: var(--brand-dark); }
+#weekLabel { font-weight: 600; font-size: 14px; min-width: 190px; text-align: center; }
+
+/* ── Таблица расписания ── */
+.schedule-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { border: 1px solid var(--border); padding: 4px; vertical-align: top; }
+thead th { background: #f8fafc; font-weight: 600; text-align: center; padding: 8px 4px; }
+thead th.today { background: #e0f2fe; color: #0369a1; }
+.dow { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.dnum { display: block; font-size: 14px; }
+.time-col {
+  background: #f8fafc;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  text-align: center;
+  width: 56px;
+}
+td.cell { min-width: 96px; height: 54px; background: #fff; }
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: color-mix(in srgb, var(--c) 13%, white);
+  border-left: 3px solid var(--c);
+  border-radius: 6px;
+  padding: 3px 16px 3px 6px;
+  margin-bottom: 3px;
+  position: relative;
+  font-size: 11.5px;
+}
+.chip b { font-weight: 600; }
+.chip i { font-style: normal; color: var(--muted); }
+.chip .del {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.chip .del:hover { background: rgba(220, 38, 38, .15); color: var(--danger); }
+
+/* ── Легенда ── */
+.legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* ── Правая колонка ── */
+.side { display: flex; flex-direction: column; gap: 16px; }
+
+form label { display: block; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+form select, form input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+form select:focus, form input:focus {
+  outline: 2px solid #bae6fd;
+  border-color: var(--brand);
+}
+form button[type="submit"] {
+  width: 100%;
+  background: var(--brand-dark);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+form button[type="submit"]:hover { background: #0369a1; }
+
+.msg { min-height: 18px; margin-top: 8px; font-size: 13px; }
+.msg.error { color: var(--danger); font-weight: 600; }
+
+input[type="search"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.patient-list, .doctor-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  max-height: 250px;
+  overflow-y: auto;
+}
+.patient-list li, .doctor-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 6px;
+}
+.patient-list li { cursor: pointer; }
+.patient-list li:hover { background: #f0f9ff; }
+.patient-list li b { display: block; font-size: 13.5px; }
+.patient-list li small { color: var(--muted); font-size: 12px; }
+.doctor-list li b { display: block; font-size: 13.5px; }
+.doctor-list li small { color: var(--muted); font-size: 12px; }
+li.empty { color: var(--muted); font-style: italic; }
+
+.linklike {
+  border: none;
+  background: none;
+  color: var(--brand-dark);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+}
+.linklike:hover { text-decoration: underline; }
+
+/* ── Диалоги ── */
+dialog {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  width: min(90vw, 380px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, .25);
+}
+dialog::backdrop { background: rgba(15, 23, 42, .4); }
+dialog h3 { margin: 0 0 14px; }
+dialog .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+dialog .actions button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+dialog .actions button.primary { background: var(--brand-dark); color: #fff; border: none; }
+
+/* ── Тост ── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #0f172a;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .25s;
+  z-index: 50;
+  max-width: 90vw;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.show.ok { background: #065f46; }
+#toast.show.error { background: #b91c1c; }

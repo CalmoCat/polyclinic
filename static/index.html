@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Поликлиника — Регистратура</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>🏥 Поликлиника — Регистратура</h1>
+    <span class="topbar-sub">Автоматизация записи на приём</span>
+  </header>
+
+  <main class="layout">
+    <!-- ===================== Сетка расписания на неделю ===================== -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Расписание врачей на неделю</h2>
+        <div class="week-nav">
+          <button id="prevWeek" type="button">← Пред. неделя</button>
+          <span id="weekLabel">…</span>
+          <button id="nextWeek" type="button">След. неделя →</button>
+        </div>
+      </div>
+      <div class="schedule-wrap">
+        <table id="scheduleGrid"></table>
+      </div>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <aside class="side">
+      <!-- ===================== Форма новой записи ===================== -->
+      <section class="panel">
+        <h2>Новая запись на приём</h2>
+        <form id="apptForm" autocomplete="off">
+          <label>Врач
+            <select id="doctorSelect" required></select>
+          </label>
+          <label>Пациент
+            <select id="patientSelect" required></select>
+          </label>
+          <label>Дата
+            <input type="date" id="dateInput" required>
+          </label>
+          <label>Время
+            <select id="timeSelect" required></select>
+          </label>
+          <button type="submit">Записать на приём</button>
+        </form>
+        <div id="formMsg" class="msg"></div>
+      </section>
+
+      <!-- ===================== Картотека пациентов ===================== -->
+      <section class="panel">
+        <h2>Картотека пациентов</h2>
+        <input type="search" id="patientSearch" placeholder="Поиск по ФИО или полису…">
+        <ul id="patientList" class="patient-list"></ul>
+        <button id="addPatientBtn" type="button" class="linklike">+ Добавить пациента</button>
+      </section>
+
+      <!-- ===================== Врачи ===================== -->
+      <section class="panel">
+        <h2>Врачи</h2>
+        <ul id="doctorList" class="doctor-list"></ul>
+        <button id="addDoctorBtn" type="button" class="linklike">+ Добавить врача</button>
+      </section>
+    </aside>
+  </main>
+
+  <!-- Диалог: новый пациент -->
+  <dialog id="patientDialog">
+    <h3>Новый пациент</h3>
+    <form id="patientForm" autocomplete="off">
+      <label>ФИО<input name="full_name" required></label>
+      <label>Полис ОМС<input name="policy" required></label>
+      <div class="actions">
+        <button type="button" class="cancel">Отмена</button>
+        <button type="submit" class="primary">Добавить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Диалог: новый врач -->
+  <dialog id="doctorDialog">
+    <h3>Новый врач</h3>
+    <form id="doctorForm" autocomplete="off">
+      <label>ФИО<input name="full_name" required></label>
+      <label>Специализация<input name="specialization" required></label>
+      <div class="actions">
+        <button type="button" class="cancel">Отмена</button>
+        <button type="submit" class="primary">Добавить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
