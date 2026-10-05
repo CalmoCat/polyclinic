@@ -1,100 +1,249 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f766e">
   <title>Поликлиника — Регистратура</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <header class="topbar">
-    <h1>🏥 Поликлиника — Регистратура</h1>
-    <span class="topbar-sub">Автоматизация записи на приём</span>
+    <a class="brand" href="/" aria-label="Поликлиника — на главную">
+      <span class="brand-mark" aria-hidden="true">+</span>
+      <span class="brand-copy"><b>Медицинский центр</b><small>РЕГИСТРАТУРА</small></span>
+    </a>
+
+    <nav class="main-nav" aria-label="Разделы приложения">
+      <button id="workTab" class="nav-tab active" type="button" aria-current="page">Регистратура</button>
+      <button id="adminTab" class="nav-tab" type="button" hidden>Администрирование</button>
+    </nav>
+
+    <div class="top-actions">
+      <button id="refreshBtn" class="icon-button" type="button" title="Обновить данные" aria-label="Обновить данные">↻</button>
+      <button id="adminLoginBtn" class="button button-light" type="button">Вход администратора</button>
+      <span id="adminBadge" class="admin-badge" hidden>Администратор</span>
+      <button id="adminLogoutBtn" class="button button-quiet" type="button" hidden>Выйти</button>
+    </div>
   </header>
 
-  <main class="layout">
-    <!-- ===================== Сетка расписания на неделю ===================== -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Расписание врачей на неделю</h2>
-        <div class="week-nav">
-          <button id="prevWeek" type="button">← Пред. неделя</button>
-          <span id="weekLabel">…</span>
-          <button id="nextWeek" type="button">След. неделя →</button>
+  <main class="page-shell">
+    <section id="workView" class="page-view" aria-labelledby="workTitle">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Рабочее место</p>
+          <h1 id="workTitle">Расписание и запись пациентов</h1>
+          <p class="heading-note">Проверяйте свободное время и записывайте пациентов на приём.</p>
         </div>
+        <div class="today-pill"><span class="status-dot"></span><span id="todayLabel">Сегодня</span></div>
       </div>
-      <div class="schedule-wrap">
-        <table id="scheduleGrid"></table>
+
+      <div class="workspace-grid">
+        <section class="panel schedule-panel" aria-labelledby="scheduleTitle">
+          <div class="panel-heading schedule-heading">
+            <div>
+              <p class="eyebrow">Календарь</p>
+              <h2 id="scheduleTitle">Расписание врачей</h2>
+            </div>
+            <div class="week-nav" aria-label="Навигация по неделям">
+              <button id="prevWeek" class="button button-outline button-small" type="button" aria-label="Предыдущая неделя">← <span>Неделя</span></button>
+              <button id="currentWeek" class="button button-quiet button-small" type="button">Сегодня</button>
+              <span id="weekLabel" class="week-label">Загрузка…</span>
+              <button id="nextWeek" class="button button-outline button-small" type="button" aria-label="Следующая неделя"><span>Неделя</span> →</button>
+            </div>
+          </div>
+          <div class="schedule-wrap">
+            <table id="scheduleGrid" aria-label="Недельное расписание врачей"></table>
+          </div>
+          <div class="schedule-footer">
+            <div id="legend" class="legend" aria-label="Легенда врачей"></div>
+            <p id="scheduleHint" class="quiet-note">Чтобы отменять записи, войдите в панель администратора.</p>
+          </div>
+        </section>
+
+        <aside class="side-column">
+          <section class="panel appointment-panel" aria-labelledby="bookingTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">Новая запись</p>
+                <h2 id="bookingTitle">Записать на приём</h2>
+              </div>
+              <span class="heading-icon" aria-hidden="true">＋</span>
+            </div>
+            <form id="apptForm" autocomplete="off">
+              <label for="doctorSelect">Врач</label>
+              <select id="doctorSelect" required>
+                <option value="">Загрузка врачей…</option>
+              </select>
+
+              <label for="patientSelect">Пациент</label>
+              <select id="patientSelect" required>
+                <option value="">Загрузка пациентов…</option>
+              </select>
+
+              <div class="form-row">
+                <div>
+                  <label for="dateInput">Дата приёма</label>
+                  <input type="date" id="dateInput" required>
+                </div>
+                <div>
+                  <label for="timeSelect">Время</label>
+                  <select id="timeSelect" required disabled>
+                    <option value="">Выберите врача и дату</option>
+                  </select>
+                </div>
+              </div>
+              <p class="field-hint">Занятые слоты автоматически скрываются.</p>
+              <button id="submitAppointment" class="button button-primary button-wide" type="submit">Записать пациента <span aria-hidden="true">→</span></button>
+            </form>
+            <div id="formMsg" class="form-message" role="status" aria-live="polite"></div>
+          </section>
+
+          <section class="panel compact-panel" aria-labelledby="patientsTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">Картотека</p>
+                <h2 id="patientsTitle">Пациенты</h2>
+              </div>
+              <button id="addPatientBtn" class="button button-outline button-small" type="button" title="Добавить пациента">＋ Добавить</button>
+            </div>
+            <label class="sr-only" for="patientSearch">Поиск пациентов</label>
+            <div class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="patientSearch" placeholder="Поиск по ФИО или полису…"></div>
+            <ul id="patientList" class="directory-list patient-list"></ul>
+          </section>
+
+          <section class="panel compact-panel" aria-labelledby="doctorsTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">Специалисты</p>
+                <h2 id="doctorsTitle">Врачи</h2>
+              </div>
+              <button id="manageDoctorsBtn" class="text-button" type="button">Управлять <span aria-hidden="true">→</span></button>
+            </div>
+            <label class="sr-only" for="doctorSearch">Поиск врачей</label>
+            <div class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="doctorSearch" placeholder="ФИО или специализация…"></div>
+            <ul id="doctorList" class="directory-list doctor-list"></ul>
+          </section>
+        </aside>
       </div>
-      <div id="legend" class="legend"></div>
     </section>
 
-    <aside class="side">
-      <!-- ===================== Форма новой записи ===================== -->
-      <section class="panel">
-        <h2>Новая запись на приём</h2>
-        <form id="apptForm" autocomplete="off">
-          <label>Врач
-            <select id="doctorSelect" required></select>
-          </label>
-          <label>Пациент
-            <select id="patientSelect" required></select>
-          </label>
-          <label>Дата
-            <input type="date" id="dateInput" required>
-          </label>
-          <label>Время
-            <select id="timeSelect" required></select>
-          </label>
-          <button type="submit">Записать на приём</button>
-        </form>
-        <div id="formMsg" class="msg"></div>
-      </section>
+    <section id="adminView" class="page-view" aria-labelledby="adminTitle" hidden>
+      <div class="page-heading admin-page-heading">
+        <div>
+          <p class="eyebrow">Управление клиникой</p>
+          <h1 id="adminTitle">Панель администратора</h1>
+          <p class="heading-note">Справочники, персонал и журнал предстоящих приёмов.</p>
+        </div>
+        <button id="adminRefreshBtn" class="button button-outline" type="button"><span aria-hidden="true">↻</span> Обновить</button>
+      </div>
 
-      <!-- ===================== Картотека пациентов ===================== -->
-      <section class="panel">
-        <h2>Картотека пациентов</h2>
-        <input type="search" id="patientSearch" placeholder="Поиск по ФИО или полису…">
-        <ul id="patientList" class="patient-list"></ul>
-        <button id="addPatientBtn" type="button" class="linklike">+ Добавить пациента</button>
-      </section>
+      <div class="stats-grid" aria-label="Сводка">
+        <article class="stat-card"><span class="stat-icon teal" aria-hidden="true">✚</span><div><span class="stat-label">Активные врачи</span><strong id="statDoctors">—</strong></div></article>
+        <article class="stat-card"><span class="stat-icon blue" aria-hidden="true">◎</span><div><span class="stat-label">Пациенты в картотеке</span><strong id="statPatients">—</strong></div></article>
+        <article class="stat-card"><span class="stat-icon amber" aria-hidden="true">▦</span><div><span class="stat-label">Приёмов сегодня</span><strong id="statToday">—</strong></div></article>
+        <article class="stat-card"><span class="stat-icon violet" aria-hidden="true">◷</span><div><span class="stat-label">Предстоящие приёмы</span><strong id="statUpcoming">—</strong></div></article>
+      </div>
 
-      <!-- ===================== Врачи ===================== -->
-      <section class="panel">
-        <h2>Врачи</h2>
-        <ul id="doctorList" class="doctor-list"></ul>
-        <button id="addDoctorBtn" type="button" class="linklike">+ Добавить врача</button>
+      <section class="panel admin-panel">
+        <div class="admin-tabs" role="tablist" aria-label="Разделы администрирования">
+          <button class="admin-tab active" type="button" role="tab" aria-selected="true" data-admin-section="doctors">Врачи <span id="doctorCountBadge" class="tab-count">—</span></button>
+          <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-section="patients">Пациенты</button>
+          <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-section="appointments">Записи на приём</button>
+        </div>
+
+        <section id="adminDoctorsPanel" class="admin-section" role="tabpanel" aria-labelledby="doctorAdminTitle">
+          <div class="section-toolbar">
+            <div>
+              <h2 id="doctorAdminTitle">Справочник врачей</h2>
+              <p class="section-description">Архивирование убирает врача из новых записей, но сохраняет его историю приёмов.</p>
+            </div>
+            <div class="toolbar-actions">
+              <label class="sr-only" for="doctorAdminSearch">Поиск в справочнике врачей</label>
+              <div class="search-box compact-search"><span aria-hidden="true">⌕</span><input type="search" id="doctorAdminSearch" placeholder="Найти врача…"></div>
+              <button id="addDoctorBtn" class="button button-primary" type="button">＋ Добавить врача</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table"><thead><tr><th>Врач</th><th>Специализация</th><th>Записи</th><th>Статус</th><th class="actions-col">Действия</th></tr></thead><tbody id="adminDoctorsTable"></tbody></table>
+          </div>
+        </section>
+
+        <section id="adminPatientsPanel" class="admin-section" role="tabpanel" aria-labelledby="patientAdminTitle" hidden>
+          <div class="section-toolbar">
+            <div>
+              <h2 id="patientAdminTitle">Картотека пациентов</h2>
+              <p class="section-description">Карточки с приёмами перемещаются в архив, а не удаляются безвозвратно.</p>
+            </div>
+            <div class="toolbar-actions">
+              <label class="sr-only" for="patientAdminSearch">Поиск в картотеке</label>
+              <div class="search-box compact-search"><span aria-hidden="true">⌕</span><input type="search" id="patientAdminSearch" placeholder="ФИО или полис…"></div>
+              <button id="addAdminPatientBtn" class="button button-primary" type="button">＋ Добавить пациента</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table"><thead><tr><th>Пациент</th><th>Полис ОМС</th><th>Предстоящие приёмы</th><th>Статус</th><th class="actions-col">Действия</th></tr></thead><tbody id="adminPatientsTable"></tbody></table>
+          </div>
+        </section>
+
+        <section id="adminAppointmentsPanel" class="admin-section" role="tabpanel" aria-labelledby="appointmentAdminTitle" hidden>
+          <div class="section-toolbar">
+            <div>
+              <h2 id="appointmentAdminTitle">Журнал записей</h2>
+              <p class="section-description">Можно отменить запись; расписание и доступность обновятся автоматически.</p>
+            </div>
+            <div class="toolbar-actions">
+              <label class="sr-only" for="appointmentScope">Период записей</label>
+              <select id="appointmentScope" class="toolbar-select"><option value="upcoming">Предстоящие</option><option value="all">Вся история</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table"><thead><tr><th>Дата и время</th><th>Пациент</th><th>Врач</th><th class="actions-col">Действие</th></tr></thead><tbody id="adminAppointmentsTable"></tbody></table>
+          </div>
+          <p id="appointmentListFootnote" class="quiet-note"></p>
+        </section>
       </section>
-    </aside>
+      <p class="security-footnote"><span aria-hidden="true">⌑</span> Доступ администратора защищён паролем, заданным на сервере в <code>ADMIN_PASSWORD</code>.</p>
+    </section>
   </main>
 
-  <!-- Диалог: новый пациент -->
-  <dialog id="patientDialog">
-    <h3>Новый пациент</h3>
-    <form id="patientForm" autocomplete="off">
-      <label>ФИО<input name="full_name" required></label>
-      <label>Полис ОМС<input name="policy" required></label>
-      <div class="actions">
-        <button type="button" class="cancel">Отмена</button>
-        <button type="submit" class="primary">Добавить</button>
-      </div>
+  <dialog id="loginDialog" class="modal" aria-labelledby="loginTitle">
+    <form id="loginForm" autocomplete="off">
+      <div class="modal-heading"><div><p class="eyebrow">Защищённый доступ</p><h2 id="loginTitle">Вход администратора</h2></div><button type="button" class="close-button" data-close-dialog="loginDialog" aria-label="Закрыть">×</button></div>
+      <p class="modal-copy">Войдите, чтобы управлять справочниками и записями клиники.</p>
+      <label for="adminPassword">Пароль администратора</label>
+      <input id="adminPassword" name="password" type="password" required autocomplete="current-password" maxlength="256">
+      <p id="loginMsg" class="form-message" role="alert" aria-live="polite"></p>
+      <div id="adminSetupHint" class="setup-hint" hidden>Администратор не настроен. Запустите сервер с переменной окружения <code>ADMIN_PASSWORD</code>.</div>
+      <div class="modal-actions"><button type="button" class="button button-outline" data-close-dialog="loginDialog">Отмена</button><button id="loginSubmit" type="submit" class="button button-primary">Войти</button></div>
     </form>
   </dialog>
 
-  <!-- Диалог: новый врач -->
-  <dialog id="doctorDialog">
-    <h3>Новый врач</h3>
+  <dialog id="doctorDialog" class="modal" aria-labelledby="doctorDialogTitle">
     <form id="doctorForm" autocomplete="off">
-      <label>ФИО<input name="full_name" required></label>
-      <label>Специализация<input name="specialization" required></label>
-      <div class="actions">
-        <button type="button" class="cancel">Отмена</button>
-        <button type="submit" class="primary">Добавить</button>
-      </div>
+      <div class="modal-heading"><div><p class="eyebrow">Справочник персонала</p><h2 id="doctorDialogTitle">Новый врач</h2></div><button type="button" class="close-button" data-close-dialog="doctorDialog" aria-label="Закрыть">×</button></div>
+      <label for="doctorName">ФИО врача</label>
+      <input id="doctorName" name="full_name" required maxlength="120" autocomplete="name" placeholder="Например, Анна Петровна Иванова">
+      <label for="doctorSpecialty">Специализация</label>
+      <input id="doctorSpecialty" name="specialization" required maxlength="80" placeholder="Например, терапевт">
+      <p id="doctorFormMsg" class="form-message" role="alert" aria-live="polite"></p>
+      <div class="modal-actions"><button type="button" class="button button-outline" data-close-dialog="doctorDialog">Отмена</button><button id="doctorSubmit" type="submit" class="button button-primary">Добавить врача</button></div>
     </form>
   </dialog>
 
-  <div id="toast"></div>
-  <script src="/static/app.js"></script>
+  <dialog id="patientDialog" class="modal" aria-labelledby="patientDialogTitle">
+    <form id="patientForm" autocomplete="off">
+      <div class="modal-heading"><div><p class="eyebrow">Картотека</p><h2 id="patientDialogTitle">Новый пациент</h2></div><button type="button" class="close-button" data-close-dialog="patientDialog" aria-label="Закрыть">×</button></div>
+      <label for="patientName">ФИО пациента</label>
+      <input id="patientName" name="full_name" required maxlength="120" autocomplete="name" placeholder="Фамилия, имя, отчество">
+      <label for="patientPolicy">Полис ОМС</label>
+      <input id="patientPolicy" name="policy" required maxlength="40" inputmode="text" placeholder="Номер полиса">
+      <p id="patientFormMsg" class="form-message" role="alert" aria-live="polite"></p>
+      <div class="modal-actions"><button type="button" class="button button-outline" data-close-dialog="patientDialog">Отмена</button><button id="patientSubmit" type="submit" class="button button-primary">Добавить пациента</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
 </body>
 </html>
