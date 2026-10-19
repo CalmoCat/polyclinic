@@ -3,98 +3,208 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f766e">
   <title>Поликлиника — Регистратура</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <h1>🏥 Поликлиника — Регистратура</h1>
-    <span class="topbar-sub">Автоматизация записи на приём</span>
+  <!-- ============================ Шапка ============================ -->
+  <header class="appbar">
+    <div class="appbar-inner">
+      <a class="brand" href="/" aria-label="Поликлиника — регистратура">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>Поликлиника</strong>
+          <small>Регистратура · запись на приём</small>
+        </span>
+      </a>
+      <div class="appbar-side">
+        <span class="today-pill" id="todayLabel"></span>
+        <button type="button" class="btn primary" id="newApptBtn">Новая запись</button>
+      </div>
+    </div>
   </header>
 
   <main class="layout">
-    <!-- ===================== Сетка расписания на неделю ===================== -->
-    <section class="panel">
+    <!-- ======================== Расписание ======================== -->
+    <section class="panel schedule-panel" aria-labelledby="scheduleTitle">
       <div class="panel-head">
-        <h2>Расписание врачей на неделю</h2>
-        <div class="week-nav">
-          <button id="prevWeek" type="button">← Пред. неделя</button>
-          <span id="weekLabel">…</span>
-          <button id="nextWeek" type="button">След. неделя →</button>
+        <div class="title-block">
+          <h2 id="scheduleTitle">Расписание врачей</h2>
+          <p class="hint">Нажмите на свободную клетку — дата и время подставятся в форму записи.</p>
+        </div>
+        <div class="week-controls">
+          <button class="btn ghost" id="todayBtn" type="button">Сегодня</button>
+          <div class="week-switch">
+            <button class="icon-btn" id="prevWeek" type="button" aria-label="Предыдущая неделя">‹</button>
+            <span class="week-label" id="weekLabel">…</span>
+            <button class="icon-btn" id="nextWeek" type="button" aria-label="Следующая неделя">›</button>
+          </div>
         </div>
       </div>
+
+      <div class="stats" id="stats" aria-label="Сводка"></div>
+      <p class="week-empty" id="weekEmpty" hidden>На этой неделе приёмов нет. Выберите клетку в таблице, чтобы записать пациента.</p>
+
       <div class="schedule-wrap">
-        <table id="scheduleGrid"></table>
+        <table class="schedule" id="scheduleGrid" aria-label="Расписание приёмов на неделю"></table>
       </div>
-      <div id="legend" class="legend"></div>
+
+      <div class="legend" id="legend" aria-label="Врачи"></div>
     </section>
 
+    <!-- ====================== Форма записи ====================== -->
     <aside class="side">
-      <!-- ===================== Форма новой записи ===================== -->
-      <section class="panel">
-        <h2>Новая запись на приём</h2>
-        <form id="apptForm" autocomplete="off">
-          <label>Врач
-            <select id="doctorSelect" required></select>
-          </label>
-          <label>Пациент
-            <select id="patientSelect" required></select>
-          </label>
-          <label>Дата
-            <input type="date" id="dateInput" required>
-          </label>
-          <label>Время
-            <select id="timeSelect" required></select>
-          </label>
-          <button type="submit">Записать на приём</button>
+      <section class="panel booking-panel" id="bookingPanel" aria-labelledby="bookingTitle">
+        <div class="panel-head">
+          <div class="title-block">
+            <h2 id="bookingTitle">Новая запись</h2>
+            <p class="hint">Четыре поля — и пациент записан.</p>
+          </div>
+          <button class="btn ghost small" id="resetForm" type="button">Сбросить</button>
+        </div>
+
+        <form id="apptForm" autocomplete="off" novalidate>
+          <div class="field">
+            <label for="doctorInput">Врач</label>
+            <div class="combo" id="doctorCombo">
+              <input type="text" id="doctorInput" placeholder="Начните вводить фамилию…"
+                     role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="doctorComboList">
+              <input type="hidden" id="doctorId">
+              <div class="combo-list" id="doctorComboList" role="listbox"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="patientInput">Пациент</label>
+            <div class="combo" id="patientCombo">
+              <input type="text" id="patientInput" placeholder="Начните вводить ФИО или полис…"
+                     role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="patientComboList">
+              <input type="hidden" id="patientId">
+              <div class="combo-list" id="patientComboList" role="listbox"></div>
+            </div>
+            <button class="btn text small add-patient-inline" id="addPatientInline" type="button">+ Новый пациент</button>
+          </div>
+
+          <div class="field">
+            <span class="label">Дата</span>
+            <div class="day-chips" id="dayChips" role="group" aria-label="Быстрый выбор даты"></div>
+            <input type="date" id="dateInput" required aria-label="Дата приёма">
+          </div>
+
+          <div class="field">
+            <span class="label">Время</span>
+            <div class="slot-grid" id="slotGrid" role="group" aria-label="Время приёма"></div>
+            <small class="field-note" id="slotNote"></small>
+          </div>
+
+          <button class="btn primary wide" type="submit" id="submitBtn">Записать на приём</button>
+          <div class="msg" id="formMsg" role="status" aria-live="polite"></div>
         </form>
-        <div id="formMsg" class="msg"></div>
-      </section>
-
-      <!-- ===================== Картотека пациентов ===================== -->
-      <section class="panel">
-        <h2>Картотека пациентов</h2>
-        <input type="search" id="patientSearch" placeholder="Поиск по ФИО или полису…">
-        <ul id="patientList" class="patient-list"></ul>
-        <button id="addPatientBtn" type="button" class="linklike">+ Добавить пациента</button>
-      </section>
-
-      <!-- ===================== Врачи ===================== -->
-      <section class="panel">
-        <h2>Врачи</h2>
-        <ul id="doctorList" class="doctor-list"></ul>
-        <button id="addDoctorBtn" type="button" class="linklike">+ Добавить врача</button>
       </section>
     </aside>
   </main>
 
-  <!-- Диалог: новый пациент -->
-  <dialog id="patientDialog">
-    <h3>Новый пациент</h3>
+  <!-- ======================== Справочники ======================== -->
+  <section class="panel directory-panel" aria-label="Справочники">
+    <div class="tabs" role="tablist">
+      <button class="tab active" id="tabBtnPatients" data-tab="patients" role="tab" aria-selected="true" aria-controls="tab-patients">
+        Пациенты <span class="count" id="patientsCount">0</span>
+      </button>
+      <button class="tab" id="tabBtnDoctors" data-tab="doctors" role="tab" aria-selected="false" aria-controls="tab-doctors">
+        Врачи <span class="count" id="doctorsCount">0</span>
+      </button>
+    </div>
+
+    <div class="tabpane" id="tab-patients" role="tabpanel" aria-labelledby="tabBtnPatients">
+      <div class="tab-toolbar">
+        <input type="search" id="patientSearch" class="search" placeholder="Поиск по ФИО или полису…" aria-label="Поиск пациентов">
+        <button class="btn ghost" id="addPatientBtn" type="button">+ Добавить пациента</button>
+      </div>
+      <ul class="list" id="patientList"></ul>
+    </div>
+
+    <div class="tabpane hidden" id="tab-doctors" role="tabpanel" aria-labelledby="tabBtnDoctors">
+      <div class="tab-toolbar">
+        <input type="search" id="doctorSearch" class="search" placeholder="Поиск по ФИО или специализации…" aria-label="Поиск врачей">
+        <button class="btn ghost" id="addDoctorBtn" type="button">+ Добавить врача</button>
+      </div>
+      <ul class="list" id="doctorList"></ul>
+    </div>
+  </section>
+
+  <!-- ======================== Диалоги ======================== -->
+  <dialog id="detailsDialog" class="dialog">
+    <div class="dialog-head">
+      <h3>Карточка приёма</h3>
+      <button class="icon-btn" type="button" data-close aria-label="Закрыть">×</button>
+    </div>
+    <dl class="details" id="detailsBody"></dl>
+    <div class="dialog-actions">
+      <button class="btn ghost" type="button" data-close>Закрыть</button>
+      <button class="btn danger" type="button" id="deleteApptBtn">Отменить запись</button>
+    </div>
+  </dialog>
+
+  <dialog id="confirmDialog" class="dialog narrow">
+    <div class="dialog-head">
+      <h3>Отменить запись?</h3>
+      <button class="icon-btn" type="button" data-close aria-label="Закрыть">×</button>
+    </div>
+    <p class="dialog-text" id="confirmText"></p>
+    <div class="dialog-actions">
+      <button class="btn ghost" type="button" data-close>Нет, оставить</button>
+      <button class="btn danger" type="button" id="confirmYes">Да, отменить</button>
+    </div>
+  </dialog>
+
+  <dialog id="patientDialog" class="dialog narrow">
+    <div class="dialog-head">
+      <h3>Новый пациент</h3>
+      <button class="icon-btn" type="button" data-close aria-label="Закрыть">×</button>
+    </div>
     <form id="patientForm" autocomplete="off">
-      <label>ФИО<input name="full_name" required></label>
-      <label>Полис ОМС<input name="policy" required></label>
-      <div class="actions">
-        <button type="button" class="cancel">Отмена</button>
-        <button type="submit" class="primary">Добавить</button>
+      <div class="field">
+        <label for="pName">ФИО</label>
+        <input id="pName" name="full_name" placeholder="Иванов Иван Иванович" required>
+      </div>
+      <div class="field">
+        <label for="pPolicy">Полис ОМС</label>
+        <input id="pPolicy" name="policy" placeholder="0000 0000 0000 0000" required>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn ghost" type="button" data-close>Отмена</button>
+        <button class="btn primary" type="submit">Добавить</button>
       </div>
     </form>
   </dialog>
 
-  <!-- Диалог: новый врач -->
-  <dialog id="doctorDialog">
-    <h3>Новый врач</h3>
+  <dialog id="doctorDialog" class="dialog narrow">
+    <div class="dialog-head">
+      <h3>Новый врач</h3>
+      <button class="icon-btn" type="button" data-close aria-label="Закрыть">×</button>
+    </div>
     <form id="doctorForm" autocomplete="off">
-      <label>ФИО<input name="full_name" required></label>
-      <label>Специализация<input name="specialization" required></label>
-      <div class="actions">
-        <button type="button" class="cancel">Отмена</button>
-        <button type="submit" class="primary">Добавить</button>
+      <div class="field">
+        <label for="dName">ФИО</label>
+        <input id="dName" name="full_name" placeholder="Иванова Анна Петровна" required>
+      </div>
+      <div class="field">
+        <label for="dSpec">Специализация</label>
+        <input id="dSpec" name="specialization" placeholder="Терапевт" required>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn ghost" type="button" data-close>Отмена</button>
+        <button class="btn primary" type="submit">Добавить</button>
       </div>
     </form>
   </dialog>
 
-  <div id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="/static/app.js"></script>
 </body>
 </html>
